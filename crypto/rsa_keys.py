@@ -1,3 +1,5 @@
+# crypto/rsa_keys.py
+
 import os
 
 # librairie cryptography
@@ -69,14 +71,14 @@ def generate_key_pair(username):
     return priv_path, pub_path
 
 # ********************************************************************************
-# Lecture depuis le certficiat PEM et has_key
+# Helpers: Lecture depuis le fichier PEM + has_key
 # ********************************************************************************
 
 def has_keys(username: str):
     """user exists?"""
     return (os.path.exists(_private_key_path(username))
-            and os.path.exists(_public_key_path(username)
-    ))
+            and os.path.exists(_public_key_path(username))
+            )
 
 def load_public_key_object(username):
     """Lit le fichier PEM de l'utilisateur et renvoie l'objet clé publique."""
@@ -101,4 +103,10 @@ def load_public_key_bytes(username: str) -> bytes:
 #     with open(_private_key_path(username), "rb") as f:
 #         return f.read()
 
+
+# théorie
+
+# sérialisation
+# objet en mémoire -> sérialisation -> octets (fichier / réseau)
+# objet en mémoire <- désérialisation - octets
 

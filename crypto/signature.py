@@ -1,6 +1,8 @@
+# crypto/signature.py
+
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
-from sympy import true
+from cryptography.exceptions import InvalidSignature
 
 
 # what gets hashed (the message body bytes);
@@ -29,7 +31,17 @@ def sign_message(private_key, message_bytes: bytes) -> bytes:
 # ********************************************************************************
 
 def verify_signature(public_key, message_bytes: bytes, signature: bytes) -> bool:
-    return true
-
-
-
+    try:
+        # méthode de cryptography.hazmat.primitives.asymmetric.rsa.RSAPublicKey
+        public_key.verify(
+            signature,           # bytes : la signature à vérifier
+            message_bytes,       # bytes : le message original (tes message_bytes)
+            padding.PKCS1v15(),  # l'objet padding (même padding qu'à la signature)
+            hashes.SHA256(),     # l'objet hash (même hash qu'à la signature)
+        )
+        return True
+    except InvalidSignature:
+        return False  # la signature ne correspond pas
+    except Exception:
+        # Corrupted key / malformed signature data also means "not verifiable"
+        return False  # tout autre problème (clé corrompue, signature malformée) donc pas vérifiable
