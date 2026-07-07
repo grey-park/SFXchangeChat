@@ -30,3 +30,6 @@ def sign_message(private_key, message_bytes: bytes) -> bytes:
 
 def verify_signature(public_key, message_bytes: bytes, signature: bytes) -> bool:
     return true
+
+
+

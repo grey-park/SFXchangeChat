@@ -28,3 +28,4 @@ if __name__ == "__main__":
     print("Taille de la signature :", len(signature), "octets")  # 256
 
     # vérification de la signature
+
