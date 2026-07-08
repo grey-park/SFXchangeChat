@@ -1,4 +1,3 @@
-
 # protocol/frame.py
 
 # section 5 Communication Protocol (SFX)

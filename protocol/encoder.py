@@ -41,3 +41,6 @@ def encode_json(data):
 # le CLIENT s'en sert pour envoyer une requête
 # - encode_request({"command": "GET_OBJECT", "object_id": "1"})
 # ************************************************************************
+
+def decode_json(text):
+    return true
