@@ -13,6 +13,9 @@ from cryptography.exceptions import InvalidSignature
 
 # ********************************************************************************
 # on signe l'empreinte SHA-256 du message avec la clé privée
+# flux: 1. H= SHA256(message_bytes) 2. {DigestInfo = H, algoUtilisé}
+#       3. Padding en 256 octets 4. d=private key, n = p x q, s=pow(m, d, n)
+#       5. signature = s.to_bytes(256)
 # ********************************************************************************
 
 def sign_message(private_key, message_bytes: bytes) -> bytes:
