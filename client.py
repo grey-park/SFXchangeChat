@@ -10,6 +10,8 @@ from protocol import frame as fr
 HOST = "127.0.0.1"  # localhost
 PORT = 6000
 
+# Full path: octet -> base64 (client.py) -> JSON () -> big edian -> frame
+
 # 1) préparer les clés et signer un message
 rsa_keys.generate_key_pair("alice")
 priv = rsa_keys.load_private_key_object("alice")
@@ -23,7 +25,7 @@ pub_pem = rsa_keys.load_public_key_bytes("alice")  # récupères PK en octets au
     # puis .decode("ascii") convertit ces bytes en str pour utiliser json.dumps()
 requete = {
     "command": "SEND_SIGNED_TEXT",
-    "object_name": "note1",
+    "object_name": "msg1",
     "sender": "alice",
     "message_b64": base64.b64encode(message).decode("ascii"),
     "signature_b64": base64.b64encode(sig).decode("ascii"),
