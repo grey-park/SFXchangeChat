@@ -44,3 +44,4 @@ print(f"Requête décodée : {data['command']}")
 # 7) close connections
 conn.close()  # ferme la connexion avec ce client (fin de dialogue)
 srv.close()  # ferme le socket d'écoute (fin du server)
+

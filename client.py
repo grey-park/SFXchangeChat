@@ -43,3 +43,4 @@ print("Requete envoyée.")
 # print(f"Réponse : {reponse}")
 
 cli.close()
+

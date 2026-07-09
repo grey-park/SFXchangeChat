@@ -98,3 +98,4 @@ def encode_error(message):
     # protocol.frame.pack_frame : Assemble une trame complète : HEADER + TYPE + LENGTH + PAYLOAD.
     return fr.pack_frame(fr.TYPE_ERROR, payload_bytes)
     # -> SFX + E + <longueur> + {"status":"ERROR","message":"Object not found."}
+
