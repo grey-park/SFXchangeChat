@@ -1,6 +1,4 @@
-
-
-
+# server.py
 
 import socket  # socket.create_connection(...)
 from protocol import frame as fr
@@ -11,7 +9,7 @@ from storage import object_store as store
 HOST = "127.0.0.1"  # localhost Identiques au client
 PORT = 6000
 
-# 1) créer le socket d'écoute (srv écoute)
+# 1) créer le socket d'écoute (srv = socket d'ECOUTE - server)
 srv = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # socket.AF_INET = famille d'adresses IPv4 + type TCP
 srv.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # réutiliser le port sans attendre (pratique en dev)
 srv.bind((HOST, PORT))       # attacher (réserve) le socket à l'adresse:port (tupple)
@@ -24,9 +22,8 @@ conn, addr = srv.accept()    # <- attends puis fabrique la frame à la réceptio
     # addr = l'adresse du client (son IP et son port).
 print(f"Client connecté : {addr}")
 
-# 3) lire une trame avec frame.py (conn devient le "sock" dans recv_frame)
+# 3) lire une trame avec frame.py (conn = socket de DIALOGUE dans recv_frame - client)
 frame_type, payload = fr.recv_frame(conn)
-    # on lit sur le socket de dialogue, pas sur celui d'écoute
 print(f"Trame reçue -> type={frame_type}  payload={payload}")
 
 # 4) décoder + valider (octets -> dict)

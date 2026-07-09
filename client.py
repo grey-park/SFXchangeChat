@@ -1,5 +1,5 @@
-# conn  = socket de dialogue (parle à un client précis) -> c'est le sock de frame
-# sock client = cli = socket.create_connection(...)
+# client.py
+
 import base64
 import socket  # socket.create_connection(...)
 from protocol import decoder as dec
@@ -18,6 +18,9 @@ sig = signature.sign_message(priv, message)  # signature avec SK 256 octets
 pub_pem = rsa_keys.load_public_key_bytes("alice")  # récupères PK en octets au format PEM
 
 # 2) construire la requête SEND_SIGNED_TEXT (champs binaires en Base64)
+    # ici le dict contient le message brut + signature + clé publique + le type d'algo
+    # b64encode prend des octets et les réécrit avec 64 caractères sûrs
+    # puis .decode("ascii") convertit ces bytes en str pour utiliser json.dumps()
 requete = {
     "command": "SEND_SIGNED_TEXT",
     "object_name": "note1",
@@ -30,7 +33,7 @@ requete = {
 
 # 3) se connecter + encorde la request (dict -> trame via encoder) + send
 cli = socket.create_connection((HOST, PORT))
-enc_request = enc.encode_request(requete)
+enc_request = enc.encode_request(requete)  # input: dict / output: bytes (JSON en UTF-8)
 cli.sendall(enc_request)
 print("Requete envoyée.")
 
@@ -40,27 +43,3 @@ print("Requete envoyée.")
 # print(f"Réponse : {reponse}")
 
 cli.close()
-
-#
-# # 1) se connecter au serveur (créer un socket client) (conn dialogue)
-# cli = socket.create_connection((HOST, PORT))  # tuple (adresse, port)
-# print(f"Connecté à {HOST}:{PORT}")  # server doit etre online pour ne pas échouer
-# # cli = object sock
-#
-# # payload brut
-# # 2) envoyer une trame GET (cli devient le "sock" dans send_frame)
-# fr.send_frame(cli, fr.TYPE_GET, b'{"object_id":"1"}')  # passe le sock
-# print("Trame envoyée.")
-# # send_frame appelle pack_frane qui assemble puis sendall
-#
-# # payload brut
-# # 3) lire la réponse du serveur
-# frame_type, payload = fr.recv_frame(cli)  # appel fonction recv_frame sur cli
-# print(f"Réponse reçue -> type={frame_type}  payload={payload}")
-# # lit la trame que le serveur a renvoyée -> retourn frame_type et payload (format déballé)
-# # recv_frame = lit les 8 octets fixes + lit le payload + réponse O (OK) ou E (ERROR)
-#
-# # 4) close
-# cli.close()
-# # cli.close() ferme la connexion.
-# # Si le serveur relisait après, son recv renverrait b"" -> ConnectionClosed
