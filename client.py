@@ -3,6 +3,7 @@
 
 
 import base64  # encoder/décoder les champs binaires en texte, parce que le JSON ne transporte que du texte
+import os
 import shlex   # commandes Unix
 import socket  # socket.create_connection(...)
 
@@ -13,6 +14,10 @@ from crypto import rsa_keys, signature
 
 HOST = "127.0.0.1"  # localhost
 PORT = 6000
+
+FILES_DIR = "files_storage"
+FILES_IN = os.path.join(FILES_DIR, "to_send")     # fichiers à signer
+FILES_OUT = os.path.join(FILES_DIR, "received")   # fichiers vérifiés
 
 # ************************************************************************
 # Les 10 commandes
@@ -92,6 +97,8 @@ def cmd_get(object_id):
     if valide:
         texte = message.decode('utf-8', errors='replace')  # replace pour pas planté par un U+FFFD
         print(f"  message : {texte!r}")
+    else:
+        print("affiche pas le message (signature invalide).")
 
 def cmd_verify(object_id):
     """comme get mais sans le message"""
@@ -131,6 +138,50 @@ def cmd_tamper(object_id):
     message = reponse.get("message", reponse)
     print(message)
 
+def cmd_send_file(username, filename):
+    """récupère un fichier depuis files_storage/to_send/ + signe + envoie"""
+    filepath = os.path.join(FILES_IN, filename)
+    if not os.path.isfile(filepath):
+        print(f"Fichier introuvable {FILES_IN} : {filename}")
+        return
+    with open(filepath, "rb") as f:
+        contenu = f.read()
+    if len(contenu) > fr.MAX_PAYLOAD:
+        print("Fichier trop gros (max 1 Mo).")
+        return
+    priv = rsa_keys.load_private_key_object(username)
+    sig = signature.sign_message(priv, contenu)
+    pub_pem = rsa_keys.load_public_key_bytes(username)
+    requete = {
+        "command": "SEND_SIGNED_TEXT",
+        "object_name": filename,          # mon choix : le nom du fichier sert de label
+        "sender": username,
+        "message_b64": base64.b64encode(contenu).decode("ascii"),
+        "signature_b64": base64.b64encode(sig).decode("ascii"),
+        "public_key_b64": base64.b64encode(pub_pem).decode("ascii"),
+        "hash_algorithm": "SHA-256",
+    }
+    reponse = envoyer(requete)
+    print(reponse.get("message", reponse))
+
+def cmd_get_file(object_id, filename):
+    """récupère un objet + vérifie la signature + écrit le fichier SI VALID"""
+    metadata, valide, message = recuperer_et_verifier(object_id)
+    if metadata is None:
+        print(f"Objet {object_id} introuvable.")
+        return
+    is_valid = "VALID" if valide else "INVALID"
+    print(f"Objet {object_id} : signature {is_valid}")
+
+    if valide:
+        os.makedirs(FILES_OUT, exist_ok=True)
+        output_path = os.path.join(FILES_OUT, filename)
+        with open(output_path, "wb") as f:
+            f.write(message)
+        print(f"Fichier écrit dans {output_path}")
+    else:
+        print("Fichier non écrit (signature invalide).")
+
 def cmd_help():
     print("""Commandes :
   /connect                                       se connecter au serveur
@@ -141,6 +192,8 @@ def cmd_help():
   /get <id>                                      récupérer + vérifier + affiche message SI SIGNATURE VALID
   /verify <id>                                   vérifier la signature (is_valid seul)
   /tamper <id>                                   altérer un objet
+  /send_file <username> <object_name> <fichier>  signer et envoyer un fichier (depuis files_storage/to_send/)
+  /get_file <id> <fichier>                       vérifier et écrire le fichier (dans files_storage/received/)
   /exit                                          quitter""")
 
 # ************************************************************************
@@ -201,7 +254,7 @@ def main():
         # Si une commande a besoin du réseau et pas connecté -> print("Pas connecté.")
         LIST_LOCAL_CMD = ("/help", "/connect", "/generate_keys", "/exit")
         if conn is None and commande not in LIST_LOCAL_CMD:
-            print("Pas connecté.")
+            print("Pas connecté. /connect pour se connecter au serveur.")
             continue
 
         try:
@@ -215,6 +268,8 @@ def main():
             elif commande == "/verify":         cmd_verify(args[0])
             elif commande == "/verify_all":     cmd_verify_all()
             elif commande == "/tamper":         cmd_tamper(args[0])
+            elif commande == "/send_file":      cmd_send_file(args[0], args[1])
+            elif commande == "/get_file":       cmd_get_file(args[0], args[1])
             elif commande == "/exit":
                 if conn is not None:            cmd_disconnect()
                 break
