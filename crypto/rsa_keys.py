@@ -34,7 +34,7 @@ def generate_key_pair(username):
     # Génération de la paire RSA (public_exponent=65537, key_size=2048)
     # cryptography choisi au hasard p et q et calcule le modulus n = p x q
     # puis calcule d = e^-1 mod (p-1)(q-1) pour la clé privée
-    # retourne un objet clé privée (dont on peut dériver la clé publique via .public_key
+    # retourne un objet clé privée (dont on peut dériver la clé publique via .public_key)
     # cryptography.hazmat.primitives.asymmetric.rsa.generate_private_key(public_exponent, key_size, backend=None)
     private_key = rsa.generate_private_key(public_exponent=PUBLIC_EXPONENT, key_size=KEY_SIZE)
 
@@ -103,10 +103,6 @@ def load_public_key_bytes(username: str) -> bytes:
 #     with open(_private_key_path(username), "rb") as f:
 #         return f.read()
 
-
-# théorie
-
-# sérialisation
-# objet en mémoire -> sérialisation -> octets (fichier / réseau)
-# objet en mémoire <- désérialisation - octets
-
+def deserialize_public_key(pem_bytes):
+    """Reconstruit un objet clé publique à partir d'octets PEM reçus (pour la vérification)."""
+    return serialization.load_pem_public_key(pem_bytes)
