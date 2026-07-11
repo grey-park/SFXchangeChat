@@ -89,12 +89,15 @@ Pour la démo, on fait:
 /get_file 2 recu.txt                       -> VALID, écrit dans files_storage/received/recu.txt
 /tamper 2
 /get_file 2 recu2.txt                      -> INVALID, fichier NON écrit
+/verify_all         -> résumé, ex. "1 VALID / 1 INVALID (sur 2)"
 
 # --- altération manuelle ---
+/send_text Davide object_title1 Hello world2
+/get 3              -> signature VALID
 # terminal 3 :
-printf 'corrompu' > server_storage/object_1/content.bin
+printf 'corrompu' > server_storage/object_3/content.bin
 # terminal client :
-/verify 1           -> signature INVALID
+/verify 3           -> signature INVALID
 ```
 
 ## 6. Le protocole SFX
