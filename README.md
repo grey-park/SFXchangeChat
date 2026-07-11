@@ -137,16 +137,22 @@ Chaque message est une trame binaire :
 - Pour vérifier l'identité, il faudrait un `PKI` (Public Key Infrastructure)
   qui lie un clé publique <-> identité
 
-## 9. Fichiers signés
+## 9. Bonus : Fichiers signés
 - signe le fichier au lieu d'un message tapé
 - la seule différence est la source des octets: le contenu d'un fichier au lieu d'un texte tapé
 - `/send_file <username> <fichier>` : lit le fichier depuis `files_storage/to_send/`, le signe, et l'envoie comme un
   objet signé normal. Le nom du fichier sert aussi d'`object_name` (par simplification)
 - `/get_file <id> <fichier>` : récupère l'objet, vérifie la signature, et si valide, écrit le contenu dans le fichier
 
-## 10. Pourquoi pas de "RSA maison" en production
-- Aucun padding : RSA brut `pow(m, e, n)`, sans PKCS#1 -> signature déterministe et malléable (falsifiable).
-- Ne pas chiffrer par caractère (`ord(c)`) : même lettre -> même chiffré, cassable par analyse de fréquence.
-- ne pas utiliser `random` (non sûr), mais la fonction `secrets`.
+## 10. Bonus : signature RSA "maison" (educatif)
 
--> donc utiliser `cryptography` qui est optimisé et sécurisé.
+Fait a la main de la signature RSA (`crypto/rsa_textbook.py`),
+- generation de cles : premiers via Miller-Rabin, d = inverse de e mod phi(n)
+- signer : s = m^d mod n  /  verifier : m = s^e mod n
+
+**Educatif seulement** - pourquoi pas en production :
+- aucun padding
+- ne pas utiliser `random` (non sûr), mais la fonction `secrets`.
+- cles de 512 bits -> trop petites (2048 minimum en pratique)
+
+-> donc utiliser `cryptography` qui est optimisé et sécurisé (RSA-2048, PKCS#1 v1.5, SHA-256).
